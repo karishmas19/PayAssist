@@ -37,18 +37,36 @@ def create_payment(payment: PaymentRequest):
 # Dialogflow Webhook
 @app.post("/webhook")
 def webhook(request: dict):
+
     query_result = request.get("queryResult", {})
+
+    # Get parameters directly
     parameters = query_result.get("parameters", {})
+
+    # Get parameters from Dialogflow context
+    output_contexts = query_result.get("outputContexts", [])
+
+    for context in output_contexts:
+        context_parameters = context.get("parameters", {})
+
+        if context_parameters:
+            if context_parameters.get("payment_type"):
+                parameters = context_parameters
+                break
 
     payment_type = parameters.get("payment_type")
     payment_method = parameters.get("payment_method")
     amount = parameters.get("amount")
 
+    # Generate mock transaction ID
     transaction_id = "TXN" + str(random.randint(10000, 99999))
 
+    # Send response back to Dialogflow
     return {
         "fulfillmentText": (
-            f"Payment successful. Your transaction ID is {transaction_id}. "
-            f"You paid {amount} for {payment_type} using {payment_method}."
+            f"Payment successful. "
+            f"Your transaction ID is {transaction_id}. "
+            f"You paid {amount} for {payment_type} "
+            f"using {payment_method}."
         )
     }
